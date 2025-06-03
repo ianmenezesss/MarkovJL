@@ -13,32 +13,17 @@ mutable struct Markov
         tipo = readline()
         
         transition_matrix = if tipo == "1"
-            println("\nEscolha o tamanho da matriz para modelar:")
-            println("1. Matriz 2x2")
-            println("2. Matriz 3x3")
-            println("3. Matriz 4x4")
-            println("4. Matriz 5x5")
-            print("Digite sua escolha: ")
-            tamanho = readline()
-            
-            if tamanho == "1"
-                _init_2x2()
-            elseif tamanho == "2"
-                _init_3x3()
-            elseif tamanho == "3"
-                _init_4x4()
-            elseif tamanho == "4"
-                _init_5x5()
-            else
-                error("Tamanho inválido.")
-            end
+            println("\nDigite o tamanho N da matriz N×N:")
+            print("Tamanho N = ")
+            n = parse(Int, readline())
+            modelo_matriz(n)
             
         elseif tipo == "2"
             println("\nEscolha o tamanho da matriz padrão:")
             println("1. Matriz 2x2")
             println("2. Matriz 3x3")
             println("3. Matriz 4x4")
-            println("4. Matriz 5x5")
+            println()
             print("Digite sua escolha: ")
             tamanho = readline()
             
@@ -48,8 +33,6 @@ mutable struct Markov
                 _init_padrao_3x3()
             elseif tamanho == "3"
                 _init_padrao_4x4()
-            elseif tamanho == "4"
-                _init_padrao_5x5()
             else
                 error("Tamanho inválido.")
             end
@@ -60,131 +43,63 @@ mutable struct Markov
         n = size(transition_matrix, 1)
         estado = zeros(1, n)
         estado[1, end] = 1.0
-        padrao = n
         
-        new(transition_matrix, estado, padrao)
+        new(transition_matrix, estado, tipo == "2" ? n : 0)
     end
 end
 
-# Manual initialization functions
-function _init_2x2()
-    println("Defina as probabilidades da matriz de transição 2x2 por linhas: ")
+function modelo_matriz(n::Int)
+    println("\nDefinindo matriz $n×$n (digite as probabilidades por Linha)")
+    transicao = zeros(n, n)
     
-    a = _probabilidades_de_transicao("Probabilidade a00: ")
-    c = _probabilidades_de_transicao("Probabilidade a01: ")
-    b = _probabilidades_de_transicao("Probabilidade a10: ")
-    d = _probabilidades_de_transicao("Probabilidade a11: ")
-    
-    if !isapprox(a + c, 1) || !isapprox(b + d, 1)
-        error("As linhas da matriz devem somar 1!")
+    for lin in 1:n
+        println("\nLinha $lin:")
+        soma = 0.0
+        
+        for col in 1:n-1
+            while true
+                try
+                    print("Probabilidade a$lin$col (0-1, padrão 0): ")
+                    input = readline()
+                    val = isempty(input) ? 0.0 : parse(Float64, input)
+                    
+                    if val < 0 || val > 1
+                        println("Valor deve estar entre 0 e 1!")
+                        continue
+                    end
+                    
+                    if (soma + val) > 1.0
+                        println("Soma parcial excede 1! Máximo possível: $(1.0 - soma)")
+                        continue
+                    end
+                    
+                    transicao[lin, col] = val
+                    soma += val
+                    break
+                catch e
+                    if isa(e, ArgumentError)
+                        println("Valor inválido! Digite um número ou Enter para 0.")
+                    else
+                        rethrow(e)
+                    end
+                end
+            end
+        end
+        
+        p_final = 1.0 - soma
+        if p_final < 0
+            error("A soma das probabilidades da linha $lin excede 1!")
+        end
+        transicao[lin, n] = p_final
+        println("Probabilidade a$lin$n (padrão restante: $(round(p_final, digits=4)): $(round(p_final, digits=4))")
     end
     
-    transicao = [a c; b d]
-    println("Matriz de transição 2x2 definida:")
-    println(transicao)
+    println("\nMatriz de transição definida (soma por linhas = 1):")
+    print_matrix_clean(transicao)
     
     return transicao
 end
 
-function _init_3x3()
-    println("Defina as probabilidades da matriz de transição 3x3 por linhas: ")
-    
-    a = _probabilidades_de_transicao("Probabilidade a00: ")
-    d = _probabilidades_de_transicao("Probabilidade a01: ")
-    g = _probabilidades_de_transicao("Probabilidade a02: ")
-    b = _probabilidades_de_transicao("Probabilidade a10: ")
-    e = _probabilidades_de_transicao("Probabilidade a11: ")
-    h = _probabilidades_de_transicao("Probabilidade a12: ")
-    c = _probabilidades_de_transicao("Probabilidade a20: ")
-    f = _probabilidades_de_transicao("Probabilidade a21: ")
-    i = _probabilidades_de_transicao("Probabilidade a22: ")
-
-    if !isapprox(a + d + g, 1) || !isapprox(b + e + h, 1) || !isapprox(c + f + i, 1)
-        error("As linhas da matriz devem somar 1!")
-    end
-    
-    transicao = [a d g; b e h; c f i]
-    println("Matriz de transição 3x3 definida:")
-    println(transicao)
-    
-    return transicao
-end
-
-function _init_4x4()
-    println("Defina as probabilidades da matriz de transição 4x4 por linhas: ")
-    
-    a = _probabilidades_de_transicao("Probabilidade a00: ")
-    e = _probabilidades_de_transicao("Probabilidade a01: ")
-    i = _probabilidades_de_transicao("Probabilidade a02: ")
-    m = _probabilidades_de_transicao("Probabilidade a03: ")
-    b = _probabilidades_de_transicao("Probabilidade a10: ")
-    f = _probabilidades_de_transicao("Probabilidade a11: ")
-    j = _probabilidades_de_transicao("Probabilidade a12: ")
-    n = _probabilidades_de_transicao("Probabilidade a13: ")
-    c = _probabilidades_de_transicao("Probabilidade a20: ")
-    g = _probabilidades_de_transicao("Probabilidade a21: ")
-    k = _probabilidades_de_transicao("Probabilidade a22: ")
-    o = _probabilidades_de_transicao("Probabilidade a23: ")
-    d = _probabilidades_de_transicao("Probabilidade a30: ")
-    h = _probabilidades_de_transicao("Probabilidade a31: ")
-    l = _probabilidades_de_transicao("Probabilidade a32: ")
-    p = _probabilidades_de_transicao("Probabilidade a33: ")
-
-    if !isapprox(a + e + i + m, 1) || !isapprox(b + f + j + n, 1) || 
-       !isapprox(c + g + k + o, 1) || !isapprox(d + h + l + p, 1)
-        error("As linhas da matriz devem somar 1!")
-    end
-    
-    transicao = [a e i m; b f j n; c g k o; d h l p]
-    println("Matriz de transição 4x4 definida:")
-    println(transicao)
-    
-    return transicao
-end
-
-function _init_5x5()
-    println("Defina as probabilidades da matriz de transição 5x5 por linhas: ")
-    
-    a = _probabilidades_de_transicao("Probabilidade a00: ")
-    f = _probabilidades_de_transicao("Probabilidade a01: ")
-    k = _probabilidades_de_transicao("Probabilidade a02: ")
-    p = _probabilidades_de_transicao("Probabilidade a03: ")
-    u = _probabilidades_de_transicao("Probabilidade a04: ")
-    b = _probabilidades_de_transicao("Probabilidade a10: ")
-    g = _probabilidades_de_transicao("Probabilidade a11: ")
-    l = _probabilidades_de_transicao("Probabilidade a12: ")
-    q = _probabilidades_de_transicao("Probabilidade a13: ")
-    v = _probabilidades_de_transicao("Probabilidade a14: ")
-    c = _probabilidades_de_transicao("Probabilidade a20: ")
-    h = _probabilidades_de_transicao("Probabilidade a21: ")
-    m = _probabilidades_de_transicao("Probabilidade a22: ")
-    r = _probabilidades_de_transicao("Probabilidade a23: ")
-    w = _probabilidades_de_transicao("Probabilidade a24: ")
-    d = _probabilidades_de_transicao("Probabilidade a30: ")
-    i = _probabilidades_de_transicao("Probabilidade a31: ")
-    n = _probabilidades_de_transicao("Probabilidade a32: ")
-    s = _probabilidades_de_transicao("Probabilidade a33: ")
-    x = _probabilidades_de_transicao("Probabilidade a34: ")
-    e = _probabilidades_de_transicao("Probabilidade a40: ")
-    j = _probabilidades_de_transicao("Probabilidade a41: ")
-    o = _probabilidades_de_transicao("Probabilidade a42: ")
-    t = _probabilidades_de_transicao("Probabilidade a43: ")
-    y = _probabilidades_de_transicao("Probabilidade a44: ")
-
-    if !isapprox(a + f + k + p + u, 1) || !isapprox(b + g + l + q + v, 1) ||
-       !isapprox(c + h + m + r + w, 1) || !isapprox(d + i + n + s + x, 1) ||
-       !isapprox(e + j + o + t + y, 1)
-        error("As linhas da matriz devem somar 1!")
-    end
-    
-    transicao = [a f k p u; b g l q v; c h m r w; d i n s x; e j o t y]
-    println("Matriz de transição 5x5 definida:")
-    println(transicao)
-    
-    return transicao
-end
-
-# Standard initialization functions
 function _init_padrao_2x2()
     println("Usando matriz de transição 2x2 padrão")
     
@@ -192,7 +107,7 @@ function _init_padrao_2x2()
                  0.6 0.4]
     
     println("Matriz de transição 2x2 padrão definida:")
-    println(transicao)
+    print_matrix_clean(transicao)
     
     return transicao
 end
@@ -205,7 +120,7 @@ function _init_padrao_3x3()
                  0.0 0.2 0.8]
     
     println("Matriz de transição 3x3 padrão definida:")
-    println(transicao)
+    print_matrix_clean(transicao)
     
     return transicao
 end
@@ -219,27 +134,11 @@ function _init_padrao_4x4()
                  1.0 0.0 0.0 0.0]
     
     println("Matriz de transição 4x4 padrão definida:")
-    println(transicao)
+    print_matrix_clean(transicao)
     
     return transicao
 end
 
-function _init_padrao_5x5()
-    println("Usando matriz de transição 5x5 padrão")
-    
-    transicao = [0.3 0.7 0.0 0.0 0.0;
-                 0.5 0.5 0.0 0.0 0.0;
-                 0.0 0.0 1.0 0.0 0.0;
-                 0.0 0.0 0.2 0.8 0.0;
-                 1.0 0.0 0.0 0.0 0.0]
-    
-    println("Matriz de transição 5x5 padrão definida:")
-    println(transicao)
-    
-    return transicao
-end
-
-# Helper functions
 function _probabilidades_de_transicao(mensagem)
     while true
         try
@@ -257,6 +156,20 @@ function _probabilidades_de_transicao(mensagem)
             end
         end
     end
+end
+
+function print_matrix_clean(mat)
+    print("[")
+    rows, cols = size(mat)
+    for i in 1:rows
+        for j in 1:cols
+            val = mat[i,j]
+            print(val)
+            j < cols && print(" ")
+        end
+        i < rows && println(";")
+    end
+    println("]")
 end
 
 function simular(markov::Markov, interacoes::Int)
@@ -284,7 +197,7 @@ function main()
         n = size(cadeia.estado, 2)
         println("\nDefina as probabilidades iniciais:")
         
-        probabilidades = zeros(1, n)  # Vetor linha
+        probabilidades = zeros(1, n)
         soma = 0.0
         
         for i in 1:n-1
@@ -326,14 +239,12 @@ function main()
         
         cadeia.estado = probabilidades
         
-        default_interacoes = if n == 2 && cadeia.padrao == 2
+        default_interacoes = if cadeia.padrao == 2
             10
-        elseif n == 3 && cadeia.padrao == 3
+        elseif cadeia.padrao == 3
             5
-        elseif n == 4 && cadeia.padrao == 4
+        elseif cadeia.padrao == 4
             20
-        elseif n == 5 && cadeia.padrao == 5
-            100
         else
             100
         end
