@@ -1,4 +1,4 @@
-## README - Simulação de Cadeias de Markov em Julia  
+### Simulação de Cadeias de Markov em Julia  
 
 ### 📌 Integrantes  
 - **Ian Freire**  
