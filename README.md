@@ -34,28 +34,11 @@ Implementação de uma simulação de **Cadeias de Markov** em Julia, com:
 
 ---
 
-### 🚀 Como Executar  
-1. Instale [Julia](https://julialang.org/downloads/)  
-2. Execute no REPL:  
-   ```julia
-   include("markov.jl")
-   main()
-Siga os prompts no terminal!
-
-📊 Exemplo de Saída
-plaintext
-Interação 5: Estado 1 = 0.352, Estado 2 = 0.648  
-Distribuição Final:  
-Estado 1: 35.2%  
-Estado 2: 64.8%  
 📚 Teoria
 Cadeias de Markov convergem para uma distribuição estacionária quando a matriz de transição é regular:
 
 [ a  c ]   [ π₁ ]     [ p₁ ]  
 [ b  d ] ∙ [ π₂ ]  =  [ p₂ ]  →  [ p₁  p₂ ] = [ πₑ  πₑ ]  
-📝 Licença
-Projeto acadêmico - livre para uso e modificação.
-
 
 ### ✨ Destaques  
 - **Entrada segura**: Validação de inputs do usuário  
