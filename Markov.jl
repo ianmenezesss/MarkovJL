@@ -227,8 +227,8 @@ function main()
         #Determinação das interacoes padrao pra teste
         default_interacoes = if cadeia.padrao == 2 #10 interacoes pra cadeia 2x2 que já chega na forma de repeticao 
             10  
-        elseif cadeia.padrao == 3 # 5 interacoes pra 3x3 para responder a questao que achei e esta na documentacao
-            5   
+        elseif cadeia.padrao == 3 # 4 interacoes pra 3x3 para responder a questao que achei e esta na documentacao
+            4   
         elseif cadeia.padrao == 4 # 20 pra 4x4 pra chegar na forma repeticao
             20  
         else
